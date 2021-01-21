@@ -189,6 +189,7 @@ class Draggable<T extends Object> extends StatefulWidget {
     this.axis,
     this.childWhenDragging,
     this.feedbackOffset = Offset.zero,
+    this.feedbackOffsetCallback,
     this.dragAnchor = DragAnchor.child,
     this.affinity,
     this.maxSimultaneousDrags,
@@ -259,6 +260,8 @@ class Draggable<T extends Object> extends StatefulWidget {
   /// purposes of finding a drag target. It is especially useful if the feedback
   /// is transformed compared to the child.
   final Offset feedbackOffset;
+
+  final FeedbackOffsetCallback? feedbackOffsetCallback;
 
   /// Where this widget should be anchored during a drag.
   final DragAnchor dragAnchor;
@@ -375,6 +378,7 @@ class Draggable<T extends Object> extends StatefulWidget {
   @override
   _DraggableState<T> createState() => _DraggableState<T>();
 }
+typedef FeedbackOffsetCallback = Offset Function(Offset dragStartPoint);
 
 /// Makes its child draggable starting from long press.
 ///
@@ -395,6 +399,7 @@ class LongPressDraggable<T extends Object> extends Draggable<T> {
     Axis? axis,
     Widget? childWhenDragging,
     Offset feedbackOffset = Offset.zero,
+    FeedbackOffsetCallback? feedbackOffsetCallback,
     DragAnchor dragAnchor = DragAnchor.child,
     int? maxSimultaneousDrags,
     VoidCallback? onDragStarted,
@@ -413,6 +418,7 @@ class LongPressDraggable<T extends Object> extends Draggable<T> {
     axis: axis,
     childWhenDragging: childWhenDragging,
     feedbackOffset: feedbackOffset,
+    feedbackOffsetCallback: feedbackOffsetCallback,
     dragAnchor: dragAnchor,
     maxSimultaneousDrags: maxSimultaneousDrags,
     onDragStarted: onDragStarted,
@@ -504,7 +510,9 @@ class _DraggableState<T extends Object> extends State<Draggable<T>> {
       initialPosition: position,
       dragStartPoint: dragStartPoint,
       feedback: widget.feedback,
-      feedbackOffset: widget.feedbackOffset,
+      feedbackOffset: widget.feedbackOffsetCallback != null
+          ? widget.feedbackOffsetCallback!(dragStartPoint)
+          : widget.feedbackOffset,
       ignoringFeedbackSemantics: widget.ignoringFeedbackSemantics,
       onDragUpdate: (DragUpdateDetails details) {
         if (mounted && widget.onDragUpdate != null) {
