@@ -275,6 +275,33 @@ void main() {
         ProcessManager: () => mockProcessManager,
       });
     });
+
+    group('build aar', () {
+      testUsingContext('throws throwsToolExit if build command fails', () async {
+        final String projectPath = await createProject(tempDir, arguments: <String>['--no-pub', '--template=module']);
+
+        when(mockProcessManager.run(
+          any,
+          environment: anyNamed('environment'),
+          workingDirectory: anyNamed('workingDirectory'),
+        )).thenAnswer((_) async => ProcessResult(1, 108, '', ''));
+
+        await expectLater(() async {
+          await runBuildAarCommand(
+            projectPath,
+            arguments: <String>['--no-pub'],
+          );
+        },
+            throwsToolExit(
+              exitCode: 108,
+              message: 'Gradle task assembleAarDebug failed with exit code 108.',
+            ));
+      }, overrides: <Type, Generator>{
+        AndroidSdk: () => mockAndroidSdk,
+        FlutterProjectFactory: () => FakeFlutterProjectFactory(tempDir),
+        ProcessManager: () => mockProcessManager,
+      });
+    });
   });
 }
 
